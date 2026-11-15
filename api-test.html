@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>Driver Hub · API connectivity test</title>
+<style>
+  body { font: 14px/1.5 Inter, system-ui, sans-serif; background: #F7F8FA; color: #0F172A; margin: 0; padding: 32px 16px; }
+  .wrap { max-width: 680px; margin: 0 auto; } h1 { font-size: 20px; margin: 0 0 4px; } p { color: #64748B; margin: 0 0 20px; }
+  .card { background: #fff; border: 1px solid #E6E8EC; border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+  label { display: block; font-size: 12.5px; font-weight: 600; margin: 10px 0 5px; } input { width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #D5D9E0; border-radius: 7px; padding: 0 10px; font: inherit; }
+  button { margin-top: 14px; height: 38px; padding: 0 16px; border-radius: 7px; border: 1px solid #1D4ED8; background: #2563EB; color: #fff; font: 600 14px inherit; cursor: pointer; }
+  .row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px dashed #E6E8EC; } .row:last-child { border: 0; }
+  .ok { color: #16A34A; font-weight: 600; } .bad { color: #DC2626; font-weight: 600; } .wait { color: #94A3B8; } code { font-size: 12px; color: #334155; word-break: break-all; }
+</style></head>
+<body><div class="wrap">
+  <h1>API connectivity test</h1>
+  <p>Run this from your real GitHub Pages address. It checks the browser ↔ Apps Script connection for real: no assumptions.</p>
+  <div class="card">
+    <label>Apps Script Web App URL</label><input id="url">
+    <label>Username</label><input id="u" value="admin" autocapitalize="none"><label>PIN</label><input id="p" type="password">
+    <button id="run">Run all tests</button>
+  </div>
+  <div class="card" id="out"></div>
+</div>
+<script src="assets/js/config.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  $('url').value = (window.IDH_CONFIG || {}).API_URL || '';
+  const tests = [
+    ['1. Reach server (ping, no login)', 'ping'], ['2. Sign in (server-side hashing)', 'login'], ['3. Authenticated read (me)', 'me'],
+    ['4. Write + read back from Google Sheets', 'diag'], ['5. Duplicate-submission guard (same key twice)', 'idem'], ['6. Unauthorised call is rejected', 'reject'], ['7. Sign out', 'logout']];
+  function paint(state) { $('out').innerHTML = tests.map(([l], i) => `<div class="row"><span>${l}</span><span class="${state[i]?.c || 'wait'}">${state[i]?.t || 'waiting'}</span></div>${state[i]?.d ? `<code>${state[i].d}</code>` : ''}`).join(''); }
+  async function post(body) {
+    const t = performance.now();
+    const res = await fetch($('url').value.trim(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), redirect: 'follow' });
+    const json = await res.json(); json._ms = Math.round(performance.now() - t); return json;
+  }
+  $('run').onclick = async () => {
+    const s = []; paint(s); let token = null;
+    const step = async (i, fn) => { try { const r = await fn(); s[i] = { c: r.pass ? 'ok' : 'bad', t: (r.pass ? 'PASS' : 'FAIL') + (r.ms ? ` · ${r.ms} ms` : ''), d: r.detail || '' }; } catch (e) { s[i] = { c: 'bad', t: 'FAIL', d: e.message + (e.message.includes('Failed to fetch') ? ' — check the URL ends with /exec and the deployment access is "Anyone".' : '') }; } paint(s); return s[i].c === 'ok'; };
+    if (!await step(0, async () => { const r = await post({ action: 'ping' }); return { pass: r.ok && r.data.pong, ms: r._ms, detail: r.ok ? 'API v' + r.data.version + ', server time ' + r.data.time : r.error }; })) return;
+    if (!await step(1, async () => { const r = await post({ action: 'login', payload: { username: $('u').value, pin: $('p').value } }); token = r.ok && r.data.token; return { pass: !!token, ms: r._ms, detail: r.ok ? 'Signed in as ' + r.data.user.name : r.error }; })) return;
+    await step(2, async () => { const r = await post({ action: 'me', token }); return { pass: r.ok, ms: r._ms, detail: r.ok ? 'Role: ' + r.data.user.role : r.error }; });
+    await step(3, async () => { const r = await post({ action: 'diag', token, idemKey: 'd' + Date.now() }); return { pass: r.ok && r.data.readBack, ms: r._ms, detail: r.ok ? 'Wrote and read back ' + r.data.written : r.error }; });
+    await step(4, async () => { const k = 'dup' + Date.now(); const a = await post({ action: 'diag', token, idemKey: k }); const b = await post({ action: 'diag', token, idemKey: k });
+      return { pass: a.ok && b.ok && b.duplicate === true && a.data.written === b.data.written, detail: b.duplicate ? 'Second call returned the original result. No duplicate row.' : 'Second call was not de-duplicated' }; });
+    await step(5, async () => { const r = await post({ action: 'listUsers', token: 'not-a-real-token' }); return { pass: !r.ok && r.code === 'AUTH', detail: r.error }; });
+    await step(6, async () => { const r = await post({ action: 'logout', token }); const after = await post({ action: 'me', token }); return { pass: r.ok && !after.ok, detail: 'Token no longer valid after sign-out' }; });
+  };
+  paint([]);
+</script></body></html>

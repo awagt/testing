@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Driver Hub · Sports Corner & Sports For Less</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>try { document.documentElement.dataset.theme = localStorage.getItem('idh.theme') || 'light'; } catch (e) {}</script>
+</head>
+<body>
+  <!-- Login -->
+  <div id="login" class="login-wrap hidden">
+    <section class="login-side">
+      <div class="dots"></div>
+      <div class="brand"><div class="brand-mark"><i data-lucide="route"></i></div> Driver Hub</div>
+      <div>
+        <h1>Internal driver requests, handovers and performance, in one place.</h1>
+        <p style="margin-top:14px">E-Commerce Operations · Sports Corner &amp; Sports For Less</p>
+      </div>
+      <div class="login-feats">
+        <span><i data-lucide="shield-check"></i> Role-based access</span>
+        <span><i data-lucide="clock-3"></i> Server-timed milestones</span>
+        <span><i data-lucide="message-circle"></i> WhatsApp updates</span>
+      </div>
+    </section>
+    <section class="login-main">
+      <div class="login-card">
+        <div class="brand mobile-only" style="margin-bottom:28px"><div class="brand-mark"><i data-lucide="route"></i></div> Driver Hub</div>
+        <h2>Sign in</h2>
+        <div class="muted">Use your username or Employee ID and your PIN.</div>
+        <form id="login-form" autocomplete="on">
+          <div class="field"><label for="lg-user">Username or Employee ID</label><input class="input" id="lg-user" name="username" autocomplete="username" autocapitalize="none" required></div>
+          <div class="field"><label for="lg-pin">PIN / Password</label><input class="input" id="lg-pin" name="pin" type="password" autocomplete="current-password" required></div>
+          <div id="login-error" class="form-error hidden"></div>
+          <button class="btn btn-primary" type="submit" id="login-btn">Sign in</button>
+          <div class="small faint" style="text-align:center">Forgot your PIN? Ask your administrator to reset it.</div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- App shell -->
+  <div id="shell" class="shell hidden">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark"><i data-lucide="route"></i></div><div class="brand-text">Driver Hub<small>SPC · SFL Operations</small></div></div>
+      <nav class="nav" id="nav"></nav>
+      <div class="side-user">
+        <div class="avatar" id="me-avatar"></div>
+        <div class="meta"><b id="me-name"></b><small id="me-role"></small></div>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="btn btn-ghost btn-icon mobile-only" id="nav-toggle" aria-label="Menu"><i data-lucide="menu"></i></button>
+        <button class="btn btn-ghost btn-icon desktop-only" id="collapse-toggle" aria-label="Collapse sidebar"><i data-lucide="panel-left"></i></button>
+        <div class="crumb" id="crumb"></div>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost btn-icon" id="refresh-btn" title="Refresh"><i data-lucide="refresh-cw"></i></button>
+        <button class="btn btn-ghost btn-icon" id="theme-btn" title="Toggle dark mode"><i data-lucide="moon"></i></button>
+        <button class="btn btn-ghost btn-icon" id="pin-btn" title="Change PIN"><i data-lucide="key-round"></i></button>
+        <button class="btn btn-ghost btn-sm" id="logout-btn"><i data-lucide="log-out"></i><span class="desktop-only">Sign out</span></button>
+      </header>
+      <main class="view" id="view"></main>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay hidden"></div>
+  <aside id="drawer" class="drawer" aria-hidden="true"></aside>
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true"></div>
+  <div id="toasts" class="toasts"></div>
+
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.js" defer></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+  <script src="assets/js/requests.js"></script>
+  <script src="assets/js/drivers.js"></script>
+  <script src="assets/js/driver-portal.js"></script>
+  <script src="assets/js/whatsapp.js"></script>
+  <script src="assets/js/reports.js"></script>
+  <script src="assets/js/admin.js"></script>
+  <script>App.start();</script>
+</body>
+</html>
